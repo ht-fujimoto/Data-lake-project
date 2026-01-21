@@ -166,8 +166,7 @@ class IcebergTableManager:
         TBLPROPERTIES (
             'table_type'='ICEBERG',
             'format'='parquet',
-            'write_compression'='snappy',
-            'domain'='{domain}'
+            'write_compression'='snappy'
         )
         """
         

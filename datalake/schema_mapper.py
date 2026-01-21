@@ -325,7 +325,7 @@ class SchemaMapper:
             "category": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat().isoformat()  # ISO8601文字列形式で保存
         }
     
     def _map_economy(self, record: Dict[str, Any],
@@ -344,7 +344,7 @@ class SchemaMapper:
             "indicator": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat().isoformat()  # ISO8601文字列形式で保存
         }
     
     def _map_generic(self, record: Dict[str, Any],
@@ -359,7 +359,7 @@ class SchemaMapper:
             "category": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_labor(self, record: Dict[str, Any],
@@ -381,7 +381,7 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_education(self, record: Dict[str, Any],
@@ -397,7 +397,7 @@ class SchemaMapper:
             "category": record.get("@cat02", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_health(self, record: Dict[str, Any],
@@ -414,7 +414,7 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_agriculture(self, record: Dict[str, Any],
@@ -431,7 +431,7 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_construction(self, record: Dict[str, Any],
@@ -453,7 +453,7 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_transport(self, record: Dict[str, Any],
@@ -474,7 +474,7 @@ class SchemaMapper:
             "indicator": record.get("@cat02", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_trade(self, record: Dict[str, Any],
@@ -495,7 +495,7 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _map_social_welfare(self, record: Dict[str, Any],
@@ -512,7 +512,7 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now()
+            "updated_at": datetime.now().isoformat()
         }
     
     def _extract_year(self, time_str: str) -> int:

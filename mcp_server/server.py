@@ -1422,21 +1422,29 @@ def load_to_iceberg(arguments: dict) -> dict:
         
         # スキーマからカラム定義を生成
         column_defs = []
+        select_columns = []
         for col in schema["columns"]:
             col_name = col["name"]
             col_type = col["type"]
-            # Athena用の型に変換
+            # Athena用の型に変換（外部テーブル用）
             if col_type == "INT":
                 athena_type = "INT"
+                select_columns.append(col_name)
             elif col_type == "DOUBLE":
                 athena_type = "DOUBLE"
+                select_columns.append(col_name)
             elif col_type == "TIMESTAMP":
-                athena_type = "TIMESTAMP"
+                # Parquetでは文字列として保存されているため、外部テーブルではSTRING
+                athena_type = "STRING"
+                # INSERT時にTIMESTAMPに変換
+                select_columns.append(f"from_iso8601_timestamp({col_name}) as {col_name}")
             else:
                 athena_type = "STRING"
+                select_columns.append(col_name)
             column_defs.append(f"{col_name} {athena_type}")
         
         columns_sql = ",\n            ".join(column_defs)
+        select_sql = ",\n            ".join(select_columns)
         
         # 外部テーブル作成SQL（Icebergテーブルと同じスキーマ）
         create_temp_table_sql = f"""
@@ -1477,10 +1485,12 @@ def load_to_iceberg(arguments: dict) -> dict:
                 "query_execution_id": temp_table_query_id
             }
         
-        # ステップ3: 外部テーブルからIcebergテーブルにINSERT
+        # ステップ3: 外部テーブルからIcebergテーブルにINSERT（型変換を含む）
         insert_sql = f"""
         INSERT INTO {glue_database}.{table_name}
-        SELECT * FROM {glue_database}.{temp_table_name}
+        SELECT 
+            {select_sql}
+        FROM {glue_database}.{temp_table_name}
         """
         
         # クエリを実行
