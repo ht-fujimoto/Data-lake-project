@@ -23,6 +23,7 @@ class DatasetMetadata:
     dataset_name: str
     domain: str
     status: str = "pending"
+    priority: int = 5
     source_url: Optional[str] = None
     fetch_date: Optional[str] = None
     transformation_date: Optional[str] = None
@@ -35,6 +36,12 @@ class DatasetMetadata:
     s3_raw_path: Optional[str] = None
     s3_transformed_path: Optional[str] = None
     s3_iceberg_path: Optional[str] = None
+    status_history: Optional[List[Dict[str, Any]]] = None
+    
+    def __post_init__(self):
+        """Initialize status_history if None"""
+        if self.status_history is None:
+            self.status_history = []
 
 
 class DatasetRegistry:
