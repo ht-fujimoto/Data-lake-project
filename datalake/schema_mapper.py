@@ -325,7 +325,7 @@ class SchemaMapper:
             "category": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat().isoformat()  # ISO8601文字列形式で保存
+            "updated_at": datetime.now().isoformat()  # ISO8601文字列形式で保存
         }
     
     def _map_economy(self, record: Dict[str, Any],
@@ -344,7 +344,7 @@ class SchemaMapper:
             "indicator": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat().isoformat()  # ISO8601文字列形式で保存
+            "updated_at": datetime.now().isoformat()  # ISO8601文字列形式で保存
         }
     
     def _map_generic(self, record: Dict[str, Any],
