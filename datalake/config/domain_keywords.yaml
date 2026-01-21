@@ -1,0 +1,192 @@
+# ドメイン別検索キーワード設定
+# 各ドメインに対してE-statデータセット検索に使用するキーワードを定義
+
+domains:
+  population:
+    name: "人口"
+    description: "人口統計、世帯、出生、死亡に関するデータ"
+    keywords:
+      - "人口"
+      - "世帯"
+      - "出生"
+      - "死亡"
+      - "国勢調査"
+      - "人口動態"
+      - "人口推計"
+    min_datasets: 3
+    priority: 10
+
+  economy:
+    name: "経済"
+    description: "GDP、産業、企業、家計、消費に関するデータ"
+    keywords:
+      - "経済"
+      - "GDP"
+      - "産業"
+      - "企業"
+      - "事業所"
+      - "家計"
+      - "消費"
+      - "景気"
+      - "経済センサス"
+    min_datasets: 3
+    priority: 9
+
+  labor:
+    name: "労働"
+    description: "雇用、賃金、労働力に関するデータ"
+    keywords:
+      - "労働"
+      - "雇用"
+      - "賃金"
+      - "給与"
+      - "就業"
+      - "失業"
+      - "労働力"
+      - "労働力調査"
+    min_datasets: 3
+    priority: 9
+
+  education:
+    name: "教育"
+    description: "学校、学生、教員に関するデータ"
+    keywords:
+      - "教育"
+      - "学校"
+      - "学生"
+      - "生徒"
+      - "児童"
+      - "教員"
+      - "大学"
+      - "学校基本調査"
+    min_datasets: 3
+    priority: 8
+
+  health:
+    name: "保健・医療"
+    description: "医療施設、患者、疾病に関するデータ"
+    keywords:
+      - "保健"
+      - "医療"
+      - "患者"
+      - "病院"
+      - "診療所"
+      - "疾病"
+      - "健康"
+      - "医療施設調査"
+    min_datasets: 3
+    priority: 8
+
+  agriculture:
+    name: "農林水産"
+    description: "農業、林業、漁業に関するデータ"
+    keywords:
+      - "農業"
+      - "林業"
+      - "漁業"
+      - "農林"
+      - "水産"
+      - "農家"
+      - "漁獲"
+      - "農林業センサス"
+    min_datasets: 3
+    priority: 7
+
+  construction:
+    name: "建設・住宅"
+    description: "建設、建築、住宅に関するデータ"
+    keywords:
+      - "建設"
+      - "建築"
+      - "住宅"
+      - "着工"
+      - "土地"
+      - "不動産"
+      - "建築着工統計"
+    min_datasets: 3
+    priority: 7
+
+  transport:
+    name: "運輸・通信"
+    description: "輸送、交通、通信に関するデータ"
+    keywords:
+      - "運輸"
+      - "輸送"
+      - "交通"
+      - "通信"
+      - "自動車"
+      - "鉄道"
+      - "航空"
+      - "運輸統計"
+    min_datasets: 3
+    priority: 7
+
+  trade:
+    name: "商業・サービス"
+    description: "小売、卸売、サービス業に関するデータ"
+    keywords:
+      - "商業"
+      - "小売"
+      - "卸売"
+      - "サービス"
+      - "飲食"
+      - "宿泊"
+      - "商業統計"
+    min_datasets: 3
+    priority: 7
+
+  social_welfare:
+    name: "社会保障"
+    description: "福祉、介護、保育、年金に関するデータ"
+    keywords:
+      - "福祉"
+      - "介護"
+      - "保育"
+      - "年金"
+      - "社会保障"
+      - "生活保護"
+      - "社会福祉施設調査"
+    min_datasets: 3
+    priority: 8
+
+  generic:
+    name: "汎用"
+    description: "その他の統計データ"
+    keywords:
+      - "統計"
+      - "調査"
+      - "データ"
+    min_datasets: 1
+    priority: 5
+
+# 検索設定
+search_config:
+  # 検索結果の最大数
+  max_results: 10
+  
+  # データセット優先順位付けの重み
+  priority_weights:
+    recency: 0.4      # 新しさ (40%)
+    coverage: 0.3     # カバレッジ (30%)
+    frequency: 0.3    # 更新頻度 (30%)
+  
+  # データセット選択基準
+  selection_criteria:
+    # 最小レコード数
+    min_records: 1000
+    
+    # 最大データ年齢（日数）
+    max_age_days: 1825  # 5年
+    
+    # 優先する更新頻度
+    preferred_frequencies:
+      - "年次"
+      - "月次"
+      - "四半期"
+
+# 注意事項
+notes: |
+  - 各ドメインには最低3つのデータセットを選択することを目標とする
+  - キーワードは日本語で指定し、E-stat検索APIに渡される
+  - 優先度（priority）は1-10の範囲で、高いほど重要
+  - 検索結果が不十分な場合は、キーワードを追加または調整する

@@ -1,0 +1,45 @@
+# データレイク構築設定
+
+# AWS設定
+aws:
+  # Glueデータベース名（MCPサーバーのestat_dbとは別のデータベース）
+  database: "estat_iceberg_db"
+  
+  # S3バケット名（Icebergテーブル用）
+  # 既存のestat-data-lakeとは別のバケットを使用
+  s3_bucket: "estat-iceberg-datalake"
+  
+  # Athenaワークグループ
+  workgroup: "estat-mcp-workgroup"
+  
+  # リージョン
+  region: "ap-northeast-1"
+
+# テーブル設定
+tables:
+  # dataset_inventoryテーブルの場所
+  inventory_location: "s3://estat-iceberg-datalake/iceberg-tables/metadata/dataset_inventory/"
+  
+  # ドメイン別テーブルの場所
+  domain_tables:
+    population: "s3://estat-iceberg-datalake/iceberg-tables/population/"
+    economy: "s3://estat-iceberg-datalake/iceberg-tables/economy/"
+    labor: "s3://estat-iceberg-datalake/iceberg-tables/labor/"
+    education: "s3://estat-iceberg-datalake/iceberg-tables/education/"
+    health: "s3://estat-iceberg-datalake/iceberg-tables/health/"
+    agriculture: "s3://estat-iceberg-datalake/iceberg-tables/agriculture/"
+    construction: "s3://estat-iceberg-datalake/iceberg-tables/construction/"
+    transport: "s3://estat-iceberg-datalake/iceberg-tables/transport/"
+    trade: "s3://estat-iceberg-datalake/iceberg-tables/trade/"
+    social_welfare: "s3://estat-iceberg-datalake/iceberg-tables/social_welfare/"
+    generic: "s3://estat-iceberg-datalake/iceberg-tables/generic/"
+
+# メタデータ保存場所
+metadata:
+  # E-statメタデータの保存場所
+  s3_location: "s3://estat-iceberg-datalake/metadata/"
+
+# 注意事項:
+# - このバケットは既存のestat-data-lakeとは別のバケットです
+# - MCPサーバーは引き続きestat-data-lakeを使用します
+# - データレイク構築のみがこの新しいバケットを使用します

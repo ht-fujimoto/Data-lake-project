@@ -1,0 +1,29 @@
+datasets:
+- added_at: '2024-01-19T00:00:00'
+  domain: population
+  id: 0003458339
+  name: 人口推計（令和2年国勢調査基準）
+  priority: 10
+  status: completed
+  status_history:
+  - error_message: null
+    from: pending
+    timestamp: '2026-01-19T11:31:16.390142'
+    to: processing
+  - error_message: null
+    from: processing
+    timestamp: '2026-01-19T11:31:16.391138'
+    to: completed
+  updated_at: '2026-01-19T11:31:16.391134'
+- added_at: '2024-01-19T00:00:00'
+  domain: economy
+  id: 0003109687
+  name: 家計調査
+  priority: 9
+  status: pending
+- added_at: '2024-01-19T00:00:00'
+  domain: economy
+  id: 0003348423
+  name: 労働力調査
+  priority: 8
+  status: pending
