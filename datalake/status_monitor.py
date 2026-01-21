@@ -283,17 +283,18 @@ class StatusMonitor:
             ダッシュボードサマリー
         """
         progress = self.get_ingestion_progress()
+        domain_stats = self.get_domain_summary()
         freshness_alerts = self.check_dataset_freshness()
         count_alerts = self.check_dataset_count_alerts()
         
         return {
             "progress": {
-                "total_datasets": progress.total_datasets,
-                "completed": progress.completed_datasets,
-                "failed": progress.failed_datasets,
-                "in_progress": progress.in_progress_datasets,
-                "pending": progress.pending_datasets,
-                "completion_rate": round(progress.completion_rate, 2)
+                "total_datasets": progress["total_datasets"],
+                "completed": progress["completed_count"],
+                "failed": progress["failed_count"],
+                "in_progress": progress["in_progress_count"],
+                "pending": progress["pending_count"],
+                "completion_rate": round(progress["completion_rate"], 2)
             },
             "domain_stats": {
                 domain: {
@@ -304,7 +305,7 @@ class StatusMonitor:
                     "total_records": stats.total_records,
                     "average_freshness_days": round(stats.average_freshness_days, 1)
                 }
-                for domain, stats in progress.domain_stats.items()
+                for domain, stats in domain_stats.items()
             },
             "alerts": {
                 "freshness": [

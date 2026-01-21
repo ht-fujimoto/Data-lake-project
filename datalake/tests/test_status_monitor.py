@@ -145,12 +145,12 @@ def test_get_ingestion_progress():
     progress = monitor.get_ingestion_progress()
     
     # Assert
-    assert progress.total_datasets == 5
-    assert progress.completed_datasets == 2
-    assert progress.failed_datasets == 1
-    assert progress.in_progress_datasets == 1
-    assert progress.pending_datasets == 1
-    assert progress.completion_rate == 40.0  # 2/5 * 100
+    assert progress["total_datasets"] == 5
+    assert progress["completed_count"] == 2
+    assert progress["failed_count"] == 1
+    assert progress["in_progress_count"] == 1
+    assert progress["pending_count"] == 1
+    assert progress["completion_rate"] == 0.4  # 2/5
 
 
 def test_get_domain_summary():
