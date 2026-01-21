@@ -1,0 +1,71 @@
+{
+  "domains": {
+    "population": {
+      "name": "人口",
+      "datasets": [
+        {"id": "0000150001", "name": "年齢各歳、男女別人口数及び性比", "loaded": true}
+      ]
+    },
+    "economy": {
+      "name": "経済",
+      "datasets": [
+        {"id": "0003348423", "name": "労働力調査", "loaded": false},
+        {"id": "0003109687", "name": "家計調査", "loaded": false}
+      ]
+    },
+    "labor": {
+      "name": "労働",
+      "datasets": [
+        {"id": "0003348423", "name": "労働力調査", "loaded": false}
+      ]
+    },
+    "education": {
+      "name": "教育",
+      "datasets": [
+        {"id": "0003147605", "name": "学校基本調査", "loaded": false}
+      ]
+    },
+    "health": {
+      "name": "保健・医療",
+      "datasets": [
+        {"id": "0003147606", "name": "医療施設調査", "loaded": false}
+      ]
+    },
+    "agriculture": {
+      "name": "農林水産",
+      "datasets": [
+        {"id": "0003147607", "name": "農林業センサス", "loaded": false}
+      ]
+    },
+    "construction": {
+      "name": "建設・住宅",
+      "datasets": [
+        {"id": "0003147608", "name": "建築着工統計調査", "loaded": false}
+      ]
+    },
+    "transport": {
+      "name": "運輸・通信",
+      "datasets": [
+        {"id": "0003147609", "name": "自動車輸送統計調査", "loaded": false}
+      ]
+    },
+    "trade": {
+      "name": "商業・サービス",
+      "datasets": [
+        {"id": "0003147610", "name": "商業統計調査", "loaded": false}
+      ]
+    },
+    "social_welfare": {
+      "name": "社会保障",
+      "datasets": [
+        {"id": "0003147611", "name": "社会福祉施設等調査", "loaded": false}
+      ]
+    },
+    "generic": {
+      "name": "汎用",
+      "datasets": [
+        {"id": "0003147612", "name": "統計調査", "loaded": false}
+      ]
+    }
+  }
+}

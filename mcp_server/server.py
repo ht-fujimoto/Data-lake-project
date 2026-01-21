@@ -453,6 +453,7 @@ def search_estat_data(arguments: dict) -> dict:
     try:
         import os
         import requests
+        import time
         
         query = arguments["query"]
         max_results = arguments.get("max_results", 10)
@@ -474,47 +475,74 @@ def search_estat_data(arguments: dict) -> dict:
             "limit": max_results
         }
         
-        response = requests.get(url, params=params, timeout=30)
-        response.raise_for_status()
+        # リトライロジック（最大3回）
+        max_retries = 3
+        retry_delay = 2  # 秒
         
-        data = response.json()
+        for attempt in range(max_retries):
+            try:
+                # タイムアウトを60秒に延長
+                response = requests.get(url, params=params, timeout=60)
+                response.raise_for_status()
+                
+                data = response.json()
+                
+                # 結果を解析
+                if "GET_STATS_LIST" not in data or "DATALIST_INF" not in data["GET_STATS_LIST"]:
+                    return {
+                        "success": True,
+                        "query": query,
+                        "results": [],
+                        "count": 0,
+                        "message": "検索結果が見つかりませんでした"
+                    }
+                
+                datalist = data["GET_STATS_LIST"]["DATALIST_INF"]
+                table_inf = datalist.get("TABLE_INF", [])
+                
+                # リストでない場合はリストに変換
+                if not isinstance(table_inf, list):
+                    table_inf = [table_inf]
+                
+                # 結果を整形
+                results = []
+                for table in table_inf[:max_results]:
+                    results.append({
+                        "dataset_id": table.get("@id", ""),
+                        "title": table.get("TITLE", {}).get("$", ""),
+                        "organization": table.get("GOV_ORG", {}).get("$", ""),
+                        "survey_date": table.get("SURVEY_DATE", ""),
+                        "open_date": table.get("OPEN_DATE", ""),
+                        "updated_date": table.get("UPDATED_DATE", "")
+                    })
+                
+                return {
+                    "success": True,
+                    "query": query,
+                    "results": results,
+                    "count": len(results),
+                    "message": f"{len(results)}件のデータセットが見つかりました"
+                }
+                
+            except requests.exceptions.Timeout as e:
+                if attempt < max_retries - 1:
+                    # リトライ前に待機
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    # 最後の試行でもタイムアウト
+                    return {
+                        "success": False,
+                        "error": f"Timeout after {max_retries} attempts",
+                        "message": f"E-stat APIがタイムアウトしました（{max_retries}回試行）。しばらく待ってから再試行してください。"
+                    }
+            except requests.exceptions.RequestException as e:
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    raise
         
-        # 結果を解析
-        if "GET_STATS_LIST" not in data or "DATALIST_INF" not in data["GET_STATS_LIST"]:
-            return {
-                "success": True,
-                "query": query,
-                "results": [],
-                "count": 0,
-                "message": "検索結果が見つかりませんでした"
-            }
-        
-        datalist = data["GET_STATS_LIST"]["DATALIST_INF"]
-        table_inf = datalist.get("TABLE_INF", [])
-        
-        # リストでない場合はリストに変換
-        if not isinstance(table_inf, list):
-            table_inf = [table_inf]
-        
-        # 結果を整形
-        results = []
-        for table in table_inf[:max_results]:
-            results.append({
-                "dataset_id": table.get("@id", ""),
-                "title": table.get("TITLE", {}).get("$", ""),
-                "organization": table.get("GOV_ORG", {}).get("$", ""),
-                "survey_date": table.get("SURVEY_DATE", ""),
-                "open_date": table.get("OPEN_DATE", ""),
-                "updated_date": table.get("UPDATED_DATE", "")
-            })
-        
-        return {
-            "success": True,
-            "query": query,
-            "results": results,
-            "count": len(results),
-            "message": f"{len(results)}件のデータセットが見つかりました"
-        }
     except Exception as e:
         return {
             "success": False,
@@ -637,7 +665,7 @@ def fetch_dataset_auto(arguments: dict) -> dict:
             "metaGetFlg": "Y"
         }
         
-        test_response = requests.get(f"{base_url}/getStatsData", params=test_params, timeout=30)
+        test_response = requests.get(f"{base_url}/getStatsData", params=test_params, timeout=60)
         test_response.raise_for_status()
         test_data = test_response.json()
         
