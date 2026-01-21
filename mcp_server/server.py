@@ -1248,6 +1248,12 @@ def save_to_parquet(arguments: dict) -> dict:
         # DataFrameに変換
         df = pd.DataFrame(transformed_records)
         
+        # updated_atカラムを文字列型に変換（Parquetで正しく保存するため）
+        if 'updated_at' in df.columns:
+            # すでに文字列の場合はそのまま、datetime型の場合はISO8601文字列に変換
+            if df['updated_at'].dtype != 'object':
+                df['updated_at'] = df['updated_at'].astype(str)
+        
         # Parquet形式でS3に保存
         if s3_output_path.startswith("s3://"):
             s3_output_path = s3_output_path[5:]
