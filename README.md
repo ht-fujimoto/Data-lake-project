@@ -1,57 +1,122 @@
-# E-stat Datalake Project
+# E-stat Data Lake Project
 
-Apache Icebergベースのe-Statデータレイク構築プロジェクト
+Apache Icebergベースの包括的なe-Statデータレイク構築プロジェクト
 
 ## 概要
 
-このプロジェクトは、e-Stat APIから取得した統計データをApache Iceberg形式でAWS S3に格納し、AWS Athenaで分析可能なデータレイクを構築します。
+このプロジェクトは、日本政府統計ポータル（e-Stat）から11のドメインカテゴリにわたる33のデータセットを取得し、Apache Iceberg形式でAWS S3に格納する包括的なデータレイクを構築します。データはAWS Athenaを通じてSQLクエリ可能で、効率的な分析とレポート生成をサポートします。
+
+### 主な特徴
+
+- **11のドメインカテゴリ**: 人口、経済、労働、教育、保健・医療、農林水産、建設・住宅、運輸・通信、商業・サービス、社会保障、汎用
+- **33のデータセット**: 各ドメインから厳選された高品質なデータセット
+- **Apache Iceberg**: ACIDトランザクションとスキーマ進化をサポート
+- **AWS統合**: S3、Glue Catalog、Athenaとのシームレスな統合
+- **自動化パイプライン**: データ取得、変換、検証、ロードの完全自動化
+- **データ品質保証**: 包括的な検証とエラー処理
+- **プロパティベーステスト**: 40の正確性プロパティによる品質保証
 
 ## 主な機能
 
-### MCPサーバー機能
-- **データセット検索**: e-Statデータセットの検索
-- **自動データ取得**: データサイズに応じた最適な取得方法の自動選択
-- **分割取得**: 大規模データセット（最大100万件）の分割取得
-- **フィルタ取得**: カテゴリ指定による絞り込み取得
-- **データ変換**: e-StatデータからIceberg形式への変換
-- **品質検証**: データ品質の検証（オプションで重複チェック）
-- **Parquet保存**: 効率的なParquet形式での保存
-- **Icebergテーブル管理**: テーブル作成とデータ投入
-- **Athena分析**: 統計分析の実行
+### データ取得層
+- **データセット選択**: ドメインごとのキーワードベース検索
+- **自動取得**: データサイズに応じた最適な取得方法の自動選択
+- **並列処理**: 最大5つの同時データセット処理
+- **再試行ロジック**: 指数バックオフによる自動再試行（1秒、2秒、4秒）
+- **進捗追跡**: リアルタイムステータスダッシュボード
 
-### データレイクコア機能
-- スキーママッピング（11ドメイン対応）
-- データ品質検証
-- 並列データ取得
-- メタデータ管理
-- エラーハンドリング
+### データ処理層
+- **スキーママッピング**: 11ドメインの自動スキーマ推論
+- **データ変換**: E-stat形式からIceberg形式への変換
+- **品質検証**: 必須フィールド、データ型、重複チェック
+- **エラー処理**: 包括的なエラーログとリカバリ機能
+
+### データ保存層
+- **Icebergテーブル**: ドメインごとのパーティション化されたテーブル
+- **Glue Catalog**: 自動テーブル登録とメタデータ管理
+- **S3ストレージ**: 効率的なParquet形式での保存
+- **トランザクション**: ACID保証とロールバック機能
+
+### 監視とレポート層
+- **ステータスモニター**: データレイクの健全性と進捗監視
+- **レポート生成**: JSON、Markdown、HTML形式のレポート
+- **アラート**: データセット数やデータ鮮度のアラート
+- **コスト追跡**: ドメイン別のストレージコスト追跡
 
 ## クイックスタート
 
-### 1. 環境設定
+### 前提条件
+
+- Python 3.9以上
+- AWS アカウント（S3、Glue、Athena へのアクセス権限）
+- E-stat API キー（[e-Stat](https://www.e-stat.go.jp/)から取得）
+
+### 1. リポジトリのクローン
 
 ```bash
-# 環境変数を設定
-cp .env.example .env
-# .envファイルを編集してAPIキーとAWS設定を追加
+git clone https://github.com/ht-fujimoto/Data-lake-project.git
+cd Data-lake-project
 ```
 
-### 2. 依存関係のインストール
+### 2. 環境設定
+
+```bash
+# 環境変数ファイルを作成
+cp .env.example .env
+
+# .envファイルを編集
+# ESTAT_API_KEY=your-api-key
+# AWS_PROFILE=your-profile
+# AWS_REGION=ap-northeast-1
+```
+
+### 3. 依存関係のインストール
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. データレイクの初期化
+### 4. AWS リソースの準備
 
 ```bash
-python datalake/scripts/initialize_datalake.py
+# S3バケットの作成
+aws s3 mb s3://estat-iceberg-datalake
+
+# Glue データベースの作成
+aws glue create-database \
+  --database-input '{"Name":"estat_iceberg_db"}'
+
+# Athena ワークグループの作成
+aws athena create-work-group \
+  --name estat-mcp-workgroup \
+  --configuration ResultConfigurationUpdates={OutputLocation=s3://estat-iceberg-datalake/athena-results/}
 ```
 
-### 4. MCPサーバーの起動
+### 5. データレイクの構築
 
 ```bash
-python mcp_server/server.py
+# 完全なデータレイク構築（33データセット）
+python datalake/main.py
+
+# 特定のドメインのみ
+python datalake/main.py --domain population economy labor
+
+# 並列処理数を指定
+python datalake/main.py --max-concurrent 10
+
+# 失敗したデータセットから再開
+python datalake/main.py --resume
+```
+
+### 6. データのクエリ
+
+```bash
+# Athena コンソールで以下のクエリを実行
+SELECT year, region_name, SUM(value) as total_population
+FROM estat_iceberg_db.population
+WHERE year >= 2020
+GROUP BY year, region_name
+ORDER BY year, total_population DESC;
 ```
 
 ## ツール一覧
@@ -76,37 +141,111 @@ python mcp_server/server.py
 
 ## アーキテクチャ
 
+### システムアーキテクチャ
+
 ```
-e-Stat API
-    ↓
-MCP Server (estat-datalake)
-    ↓
-Data Ingestion Orchestrator
-    ↓
-Schema Mapper → Data Quality Validator
-    ↓
-Iceberg Table Manager
-    ↓
-S3 (Parquet + Iceberg)
-    ↓
-AWS Glue Data Catalog
-    ↓
-AWS Athena (Query Interface)
+┌─────────────────┐
+│   E-stat API    │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────────────────────────────────────────────┐
+│              データ取得層                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │Dataset       │  │Dataset       │  │Dataset       │  │
+│  │Selector      │→ │Fetcher       │→ │Registry      │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+         │
+         ↓
+┌─────────────────────────────────────────────────────────┐
+│              データ処理層                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │Schema        │  │Data          │  │Data          │  │
+│  │Mapper        │→ │Transformer   │→ │Validator     │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+         │
+         ↓
+┌─────────────────────────────────────────────────────────┐
+│              データ保存層                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │Iceberg       │  │AWS Glue      │  │S3 Iceberg    │  │
+│  │Loader        │→ │Catalog       │→ │Tables        │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+         │
+         ↓
+┌─────────────────────────────────────────────────────────┐
+│              クエリ層                                      │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │           AWS Athena (SQL Query)                 │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+         │
+         ↓
+┌─────────────────────────────────────────────────────────┐
+│              監視・レポート層                              │
+│  ┌──────────────┐  ┌──────────────┐                    │
+│  │Status        │  │Report        │                    │
+│  │Monitor       │→ │Generator     │                    │
+│  └──────────────┘  └──────────────┘                    │
+└─────────────────────────────────────────────────────────┘
 ```
+
+### パイプラインフロー
+
+1. **Fetch**: E-statからデータセットを取得してS3に保存
+2. **Transform**: E-stat形式からIceberg形式に変換
+3. **Validate**: データ品質を検証（必須フィールド、型、重複）
+4. **Load**: 検証済みデータをIcebergテーブルにロード
 
 ## 対応ドメイン
 
-1. population（人口統計）
-2. labor（労働統計）
-3. economy（経済統計）
-4. education（教育統計）
-5. health（保健統計）
-6. agriculture（農業統計）
-7. construction（建設統計）
-8. transport（運輸統計）
-9. trade（貿易統計）
-10. social_welfare（社会福祉統計）
-11. generic（汎用）
+| ドメイン | 説明 | 主要キーワード | データセット数 |
+|---------|------|--------------|--------------|
+| population | 人口統計 | 人口、世帯、出生、死亡、国勢調査 | 3+ |
+| economy | 経済統計 | GDP、産業、企業、家計、消費 | 3+ |
+| labor | 労働統計 | 雇用、賃金、就業、失業、労働力 | 3+ |
+| education | 教育統計 | 学校、学生、教員、大学 | 3+ |
+| health | 保健・医療統計 | 医療、患者、病院、疾病、健康 | 3+ |
+| agriculture | 農林水産統計 | 農業、林業、漁業、農家、漁獲 | 3+ |
+| construction | 建設・住宅統計 | 建設、建築、住宅、着工、土地 | 3+ |
+| transport | 運輸・通信統計 | 運輸、輸送、交通、通信、鉄道 | 3+ |
+| trade | 商業・サービス統計 | 商業、小売、卸売、サービス、飲食 | 3+ |
+| social_welfare | 社会保障統計 | 福祉、介護、保育、年金、社会保障 | 3+ |
+| generic | 汎用統計 | その他の統計データ | 1+ |
+
+### テーブルスキーマ
+
+各ドメインテーブルは以下の共通フィールドを持ちます：
+
+- `dataset_id`: データセットID（STRING）
+- `stats_data_id`: 統計表ID（STRING）
+- `year`: 年度（INT）
+- `region_code`: 地域コード（STRING）
+- `value`: 値（DOUBLE）
+- `unit`: 単位（STRING）
+- `updated_at`: 更新日時（TIMESTAMP）
+
+ドメイン固有のフィールド：
+- **economy**: `quarter`（四半期）、`indicator`（指標）
+- **labor**: `month`（月）、`industry_code`、`occupation_code`、`indicator`
+- **education**: `school_type`（学校種別）、`category`
+- **health**: `facility_type`（施設種別）、`disease_code`、`indicator`
+- **agriculture**: `sector`（部門）、`product_code`、`indicator`
+- **construction**: `month`、`building_type`、`structure_type`、`indicator`
+- **transport**: `month`、`transport_mode`、`indicator`
+- **trade**: `quarter`、`industry_code`、`business_type`、`indicator`
+- **social_welfare**: `facility_type`、`service_type`、`indicator`
+
+### パーティション戦略
+
+すべてのテーブルは以下でパーティション化されています：
+- `year`: 年度別パーティション
+- `region_code`: 地域別パーティション（genericを除く）
+
+これにより、クエリパフォーマンスが大幅に向上します。
 
 ## ドキュメント
 
