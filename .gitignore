@@ -56,3 +56,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+
+# Large catalog files
+estat_complete_catalog.json
+estat_complete_catalog.csv

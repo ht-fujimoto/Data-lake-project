@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "estat-datalake": {
+      "command": "python3",
+      "args": [
+        "-u",
+        "mcp_server/server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "ESTAT_APP_ID": "${env:ESTAT_APP_ID}",
+        "AWS_REGION": "${env:AWS_REGION}",
+        "DATALAKE_S3_BUCKET": "${env:DATALAKE_S3_BUCKET}",
+        "DATALAKE_GLUE_DATABASE": "${env:DATALAKE_GLUE_DATABASE}",
+        "ATHENA_OUTPUT_LOCATION": "${env:ATHENA_OUTPUT_LOCATION}"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "search_estat_data",
+        "fetch_dataset",
+        "fetch_dataset_auto",
+        "load_data_from_s3",
+        "transform_data",
+        "validate_data_quality",
+        "save_to_parquet",
+        "create_iceberg_table",
+        "load_to_iceberg",
+        "fetch_dataset_filtered",
+        "fetch_large_dataset_complete",
+        "fetch_large_dataset_parallel",
+        "analyze_with_athena",
+        "ingest_dataset_complete"
+      ]
+    }
+  }
+}

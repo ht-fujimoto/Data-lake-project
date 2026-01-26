@@ -21,9 +21,8 @@ DOMAIN_SCHEMAS = {
             {"name": "category", "type": "STRING", "description": "カテゴリ"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "economy": {
@@ -36,9 +35,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "labor": {
@@ -53,9 +51,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標（雇用者数、賃金など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "education": {
@@ -68,9 +65,8 @@ DOMAIN_SCHEMAS = {
             {"name": "category", "type": "STRING", "description": "カテゴリ（学生数、教員数など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "health": {
@@ -84,9 +80,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標（患者数、病床数など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "agriculture": {
@@ -100,9 +95,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標（生産量、経営体数など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "construction": {
@@ -117,9 +111,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標（着工件数、床面積など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "transport": {
@@ -133,9 +126,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標（輸送量、旅客数など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "trade": {
@@ -150,9 +142,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標（売上高、従業者数など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "social_welfare": {
@@ -166,9 +157,8 @@ DOMAIN_SCHEMAS = {
             {"name": "indicator", "type": "STRING", "description": "指標（利用者数、施設数など）"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
-        "partition_by": ["year", "region_code"]
+        "partition_by": ["year"]
     },
     
     "generic": {
@@ -180,7 +170,6 @@ DOMAIN_SCHEMAS = {
             {"name": "category", "type": "STRING", "description": "カテゴリ"},
             {"name": "value", "type": "DOUBLE", "description": "値"},
             {"name": "unit", "type": "STRING", "description": "単位"},
-            {"name": "updated_at", "type": "TIMESTAMP", "description": "更新日時"}
         ],
         "partition_by": ["year"]
     }
@@ -325,7 +314,6 @@ class SchemaMapper:
             "category": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()  # ISO8601文字列形式で保存
         }
     
     def _map_economy(self, record: Dict[str, Any],
@@ -344,7 +332,6 @@ class SchemaMapper:
             "indicator": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()  # ISO8601文字列形式で保存
         }
     
     def _map_generic(self, record: Dict[str, Any],
@@ -359,7 +346,6 @@ class SchemaMapper:
             "category": record.get("@cat01", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_labor(self, record: Dict[str, Any],
@@ -381,7 +367,6 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_education(self, record: Dict[str, Any],
@@ -397,7 +382,6 @@ class SchemaMapper:
             "category": record.get("@cat02", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_health(self, record: Dict[str, Any],
@@ -414,7 +398,6 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_agriculture(self, record: Dict[str, Any],
@@ -431,7 +414,6 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_construction(self, record: Dict[str, Any],
@@ -453,7 +435,6 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_transport(self, record: Dict[str, Any],
@@ -474,7 +455,6 @@ class SchemaMapper:
             "indicator": record.get("@cat02", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_trade(self, record: Dict[str, Any],
@@ -495,7 +475,6 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _map_social_welfare(self, record: Dict[str, Any],
@@ -512,7 +491,6 @@ class SchemaMapper:
             "indicator": record.get("@cat03", ""),
             "value": self._parse_value(record.get("$", "0")),
             "unit": record.get("@unit", ""),
-            "updated_at": datetime.now().isoformat()
         }
     
     def _extract_year(self, time_str: str) -> int:

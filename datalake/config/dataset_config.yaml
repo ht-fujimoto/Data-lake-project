@@ -1,29 +1,220 @@
 datasets:
-- added_at: '2024-01-19T00:00:00'
-  domain: population
-  dataset_id: '0003458339'
-  dataset_name: 人口推計（令和2年国勢調査基準）
+# Labor domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: labor
+  dataset_id: '0003217721'
+  dataset_name: 労働力調査 基本集計
   priority: 10
   status: completed
-  status_history:
-  - error_message: null
-    from: pending
-    timestamp: '2026-01-19T11:31:16.390142'
-    to: processing
-  - error_message: null
-    from: processing
-    timestamp: '2026-01-19T11:31:16.391138'
-    to: completed
-  updated_at: '2026-01-19T11:31:16.391134'
-- added_at: '2024-01-19T00:00:00'
-  domain: economy
-  dataset_id: '0003109687'
-  dataset_name: 家計調査
+- added_at: '2026-01-23T00:00:00'
+  domain: labor
+  dataset_id: '0003385948'
+  dataset_name: 労働力調査 詳細集計
   priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: labor
+  dataset_id: '0003006361'
+  dataset_name: 年齢階級・教育・雇用形態別雇用者数
+  priority: 8
   status: pending
-- added_at: '2024-01-19T00:00:00'
+
+# Economy domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
   domain: economy
-  dataset_id: '0003348423'
-  dataset_name: 労働力調査
+  dataset_id: '0003032532'
+  dataset_name: 経済センサス 活動調査
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: economy
+  dataset_id: '0002018922'
+  dataset_name: 景気動向指数
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: economy
+  dataset_id: '0002050001'
+  dataset_name: 消費者物価指数
+  priority: 8
+  status: pending
+
+# Education domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: education
+  dataset_id: '0003061540'
+  dataset_name: 学校基本調査 総括
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: education
+  dataset_id: '0003219695'
+  dataset_name: 学校教員統計調査
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: education
+  dataset_id: '0003015869'
+  dataset_name: 学校基本調査 都道府県別学校数
+  priority: 8
+  status: pending
+
+# Health domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: health
+  dataset_id: '0003027893'
+  dataset_name: 医療施設調査 施設数
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: health
+  dataset_id: '0003278213'
+  dataset_name: 患者調査
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: health
+  dataset_id: '0003027909'
+  dataset_name: 医療施設調査 病院数
+  priority: 8
+  status: pending
+
+# Agriculture domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: agriculture
+  dataset_id: '0003061365'
+  dataset_name: 農林業センサス
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: agriculture
+  dataset_id: '0002112323'
+  dataset_name: 作物統計調査
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: agriculture
+  dataset_id: '0003298793'
+  dataset_name: 農業経営統計 肥育豚生産費
+  priority: 8
+  status: pending
+
+# Construction domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: construction
+  dataset_id: '0003114490'
+  dataset_name: 建築着工統計 用途別
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: construction
+  dataset_id: '0003355288'
+  dataset_name: 建設工事受注動態統計
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: construction
+  dataset_id: '0003117525'
+  dataset_name: 建築着工統計 建築主別
+  priority: 8
+  status: pending
+
+# Transport domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: transport
+  dataset_id: '0003090587'
+  dataset_name: 自動車輸送統計
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: transport
+  dataset_id: '0003454512'
+  dataset_name: 港湾統計
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: transport
+  dataset_id: '0003423095'
+  dataset_name: 鉄道輸送統計 旅客輸送
+  priority: 8
+  status: pending
+
+# Trade domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: trade
+  dataset_id: '0003014475'
+  dataset_name: 商業動態統計
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: trade
+  dataset_id: '0003212280'
+  dataset_name: 特定サービス産業実態調査
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: trade
+  dataset_id: '0003014563'
+  dataset_name: 商業統計 小売業
+  priority: 8
+  status: pending
+
+# Social Welfare domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: social_welfare
+  dataset_id: '0003173071'
+  dataset_name: 社会福祉施設等調査
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: social_welfare
+  dataset_id: '0003215501'
+  dataset_name: 介護サービス施設・事業所調査
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: social_welfare
+  dataset_id: '0003172881'
+  dataset_name: 介護保険事業状況報告
+  priority: 8
+  status: pending
+
+# Population domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: population
+  dataset_id: '0000150001'
+  dataset_name: 人口推計 月報
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: population
+  dataset_id: '0000150271'
+  dataset_name: 人口推計 年報
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: population
+  dataset_id: '0003389501'
+  dataset_name: 国勢調査 世帯の種類別世帯数
+  priority: 8
+  status: pending
+
+# Generic domain (3 datasets)
+- added_at: '2026-01-23T00:00:00'
+  domain: generic
+  dataset_id: '0000010108'
+  dataset_name: 日本統計年鑑 社会保障
+  priority: 10
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: generic
+  dataset_id: '0000010103'
+  dataset_name: 日本統計年鑑 経済基盤
+  priority: 9
+  status: completed
+- added_at: '2026-01-23T00:00:00'
+  domain: generic
+  dataset_id: '0000010212'
+  dataset_name: 日本統計年鑑 家計
   priority: 8
   status: pending

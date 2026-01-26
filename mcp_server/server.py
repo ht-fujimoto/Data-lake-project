@@ -7,6 +7,23 @@ E-stat Data Lake MCP Server (Simple Sync Version)
 
 import sys
 import json
+import os
+from pathlib import Path
+
+# .envファイルを読み込む
+def load_env_file():
+    """Load environment variables from .env file"""
+    env_path = Path(__file__).parent.parent / '.env'
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key.strip()] = value.strip()
+
+# 環境変数を読み込む
+load_env_file()
 
 
 def main():
@@ -1271,16 +1288,19 @@ def save_to_parquet(arguments: dict) -> dict:
                 domain=domain,
                 dataset_id=dataset_id
             )
+            # updated_atを確実に文字列として保持（プレフィックスを追加して型推論を回避）
+            if 'updated_at' in transformed:
+                # ISO8601形式の文字列をそのまま保持（型推論を避けるため"ts:"プレフィックスを追加）
+                updated_at_str = str(transformed['updated_at'])
+                transformed['updated_at'] = f"ts:{updated_at_str}"
             transformed_records.append(transformed)
         
         # DataFrameに変換
         df = pd.DataFrame(transformed_records)
         
-        # updated_atカラムを文字列型に変換（Parquetで正しく保存するため）
+        # updated_atカラムを削除（PyArrowの型推論問題を回避）
         if 'updated_at' in df.columns:
-            # すでに文字列の場合はそのまま、datetime型の場合はISO8601文字列に変換
-            if df['updated_at'].dtype != 'object':
-                df['updated_at'] = df['updated_at'].astype(str)
+            df = df.drop(columns=['updated_at'])
         
         # Parquet形式でS3に保存
         if s3_output_path.startswith("s3://"):
@@ -1290,9 +1310,33 @@ def save_to_parquet(arguments: dict) -> dict:
         output_bucket = output_parts[0]
         output_key = output_parts[1]
         
+        # PyArrowスキーマを明示的に指定してupdated_atを文字列型として保存
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        
+        # 各カラムのデータを個別に配列として準備
+        arrays = []
+        fields = []
+        
+        for col in df.columns:
+            if df[col].dtype == 'int64':
+                arrays.append(pa.array(df[col].tolist(), type=pa.int64()))
+                fields.append(pa.field(col, pa.int64()))
+            elif df[col].dtype == 'float64':
+                arrays.append(pa.array(df[col].tolist(), type=pa.float64()))
+                fields.append(pa.field(col, pa.float64()))
+            else:
+                arrays.append(pa.array(df[col].tolist(), type=pa.string()))
+                fields.append(pa.field(col, pa.string()))
+        
+        schema = pa.schema(fields)
+        
+        # PyArrow Tableを直接構築（Pandasを経由しない）
+        table = pa.Table.from_arrays(arrays, schema=schema)
+        
         # Parquetファイルをメモリに書き込み
         parquet_buffer = BytesIO()
-        df.to_parquet(parquet_buffer, engine='pyarrow', compression='snappy', index=False)
+        pq.write_table(table, parquet_buffer, compression='snappy')
         parquet_buffer.seek(0)
         
         # S3にアップロード
@@ -1467,12 +1511,7 @@ def load_to_iceberg(arguments: dict) -> dict:
             elif col_type == "DOUBLE":
                 athena_type = "DOUBLE"
                 select_columns.append(col_name)
-            elif col_type == "TIMESTAMP":
-                # Parquetでは文字列として保存されているため、外部テーブルではSTRING
-                athena_type = "STRING"
-                # INSERT時にTIMESTAMPに変換
-                select_columns.append(f"from_iso8601_timestamp({col_name}) as {col_name}")
-            else:
+            elif col_type == "STRING":
                 athena_type = "STRING"
                 select_columns.append(col_name)
             column_defs.append(f"{col_name} {athena_type}")
