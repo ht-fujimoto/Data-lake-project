@@ -1,0 +1,415 @@
+# 検索キーワード変換辞書
+# データレイク検索時のキーワード正規化・展開に使用
+
+keyword_mappings:
+  # 人口関連
+  人口:
+    synonyms:
+      - population
+      - 人口統計
+      - demographics
+      - 国勢調査
+      - census
+      - 住民
+      - 世帯
+    related_domains:
+      - population
+      - social_welfare
+    english: population
+  
+  # 労働関連
+  労働:
+    synonyms:
+      - labor
+      - employment
+      - 雇用
+      - 就業
+      - 労働力
+      - 労働者
+      - 従業員
+      - 就職
+      - 失業
+    related_domains:
+      - labor
+      - economy
+    english: labor
+  
+  雇用:
+    synonyms:
+      - employment
+      - 労働
+      - 就業
+      - 就職
+      - 採用
+    related_domains:
+      - labor
+      - economy
+    english: employment
+  
+  賃金:
+    synonyms:
+      - wage
+      - salary
+      - 給与
+      - 給料
+      - 所得
+      - 収入
+    related_domains:
+      - labor
+      - economy
+    english: wage
+  
+  # 経済関連
+  経済:
+    synonyms:
+      - economy
+      - GDP
+      - 経済指標
+      - 景気
+      - 経済成長
+      - 国民経済
+    related_domains:
+      - economy
+      - trade
+    english: economy
+  
+  GDP:
+    synonyms:
+      - 国内総生産
+      - 経済成長
+      - economy
+      - 経済指標
+    related_domains:
+      - economy
+    english: gdp
+  
+  産業:
+    synonyms:
+      - industry
+      - 業種
+      - 事業
+      - ビジネス
+    related_domains:
+      - economy
+      - trade
+      - agriculture
+    english: industry
+  
+  # 教育関連
+  教育:
+    synonyms:
+      - education
+      - 学校
+      - 学習
+      - 教育機関
+    related_domains:
+      - education
+    english: education
+  
+  学校:
+    synonyms:
+      - school
+      - 教育機関
+      - 学園
+      - 学院
+    related_domains:
+      - education
+    english: school
+  
+  学生:
+    synonyms:
+      - student
+      - 生徒
+      - 児童
+      - 学習者
+    related_domains:
+      - education
+    english: student
+  
+  # 保健・医療関連
+  医療:
+    synonyms:
+      - healthcare
+      - medical
+      - 保健
+      - 健康
+      - 医療サービス
+    related_domains:
+      - health
+    english: healthcare
+  
+  病院:
+    synonyms:
+      - hospital
+      - 医療機関
+      - 診療所
+      - クリニック
+    related_domains:
+      - health
+    english: hospital
+  
+  患者:
+    synonyms:
+      - patient
+      - 受診者
+      - 医療利用者
+    related_domains:
+      - health
+    english: patient
+  
+  # 農林水産関連
+  農業:
+    synonyms:
+      - agriculture
+      - 農林
+      - 農産
+      - 農家
+      - 農業経営
+    related_domains:
+      - agriculture
+    english: agriculture
+  
+  漁業:
+    synonyms:
+      - fishery
+      - 水産
+      - 漁獲
+      - 漁師
+    related_domains:
+      - agriculture
+    english: fishery
+  
+  # 建設・住宅関連
+  建設:
+    synonyms:
+      - construction
+      - 建築
+      - 土木
+      - 工事
+    related_domains:
+      - construction
+    english: construction
+  
+  住宅:
+    synonyms:
+      - housing
+      - 住居
+      - 家屋
+      - 建物
+      - 不動産
+    related_domains:
+      - construction
+    english: housing
+  
+  # 運輸・通信関連
+  運輸:
+    synonyms:
+      - transport
+      - transportation
+      - 輸送
+      - 交通
+      - 物流
+    related_domains:
+      - transport
+    english: transport
+  
+  交通:
+    synonyms:
+      - traffic
+      - transport
+      - 運輸
+      - 輸送
+    related_domains:
+      - transport
+    english: traffic
+  
+  # 商業・サービス関連
+  商業:
+    synonyms:
+      - commerce
+      - trade
+      - 小売
+      - 卸売
+      - 販売
+    related_domains:
+      - trade
+    english: commerce
+  
+  小売:
+    synonyms:
+      - retail
+      - 小売業
+      - 販売
+    related_domains:
+      - trade
+    english: retail
+  
+  # 社会保障関連
+  福祉:
+    synonyms:
+      - welfare
+      - 社会保障
+      - 社会福祉
+      - 福祉サービス
+    related_domains:
+      - social_welfare
+    english: welfare
+  
+  介護:
+    synonyms:
+      - care
+      - nursing care
+      - 介護サービス
+      - 高齢者ケア
+    related_domains:
+      - social_welfare
+      - health
+    english: care
+  
+  # 地域関連
+  都道府県:
+    synonyms:
+      - prefecture
+      - 地域
+      - 地方
+      - 県
+    english: prefecture
+  
+  市区町村:
+    synonyms:
+      - municipality
+      - 自治体
+      - 地方自治体
+      - 市町村
+    english: municipality
+  
+  # 時間関連
+  年度:
+    synonyms:
+      - fiscal year
+      - year
+      - 年
+      - 年次
+    english: year
+  
+  月次:
+    synonyms:
+      - monthly
+      - 月
+      - 月別
+    english: monthly
+  
+  四半期:
+    synonyms:
+      - quarter
+      - quarterly
+      - Q1
+      - Q2
+      - Q3
+      - Q4
+    english: quarter
+
+# ドメイン別キーワード
+domain_keywords:
+  population:
+    - 人口
+    - 世帯
+    - 出生
+    - 死亡
+    - 国勢調査
+    - 人口動態
+    - 人口統計
+  
+  labor:
+    - 労働
+    - 雇用
+    - 賃金
+    - 給与
+    - 就業
+    - 失業
+    - 労働力
+    - 労働時間
+  
+  economy:
+    - 経済
+    - GDP
+    - 産業
+    - 企業
+    - 事業所
+    - 家計
+    - 消費
+    - 景気
+  
+  education:
+    - 教育
+    - 学校
+    - 学生
+    - 生徒
+    - 児童
+    - 教員
+    - 大学
+  
+  health:
+    - 保健
+    - 医療
+    - 患者
+    - 病院
+    - 診療所
+    - 疾病
+    - 健康
+  
+  agriculture:
+    - 農業
+    - 林業
+    - 漁業
+    - 農林
+    - 水産
+    - 農家
+    - 漁獲
+  
+  construction:
+    - 建設
+    - 建築
+    - 住宅
+    - 着工
+    - 土地
+    - 不動産
+  
+  transport:
+    - 運輸
+    - 輸送
+    - 交通
+    - 通信
+    - 自動車
+    - 鉄道
+    - 航空
+  
+  trade:
+    - 商業
+    - 小売
+    - 卸売
+    - サービス
+    - 飲食
+    - 宿泊
+  
+  social_welfare:
+    - 福祉
+    - 介護
+    - 保育
+    - 年金
+    - 社会保障
+    - 生活保護
+
+# 英語→日本語マッピング
+english_to_japanese:
+  population: 人口
+  labor: 労働
+  employment: 雇用
+  economy: 経済
+  education: 教育
+  healthcare: 医療
+  agriculture: 農業
+  construction: 建設
+  transport: 運輸
+  commerce: 商業
+  welfare: 福祉

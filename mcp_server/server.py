@@ -1110,14 +1110,25 @@ def transform_data(arguments: dict) -> dict:
                 transformed['updated_at'] = transformed['updated_at'].isoformat()
             transformed_records.append(transformed)
         
+        # 変換後のデータをS3に保存
+        s3_output_key = f"transformed/{domain}/{dataset_id}.json"
+        s3_client.put_object(
+            Bucket=bucket,
+            Key=s3_output_key,
+            Body=json.dumps(transformed_records, ensure_ascii=False, indent=2).encode('utf-8'),
+            ContentType='application/json'
+        )
+        s3_output_path = f"s3://{bucket}/{s3_output_key}"
+        
         return {
             "success": True,
             "domain": domain,
             "dataset_id": dataset_id,
             "input_records": len(data),
             "output_records": len(transformed_records),
+            "s3_output_path": s3_output_path,
             "sample": transformed_records[:3] if len(transformed_records) > 3 else transformed_records,
-            "message": f"Successfully transformed {len(transformed_records)} records for domain '{domain}'"
+            "message": f"Successfully transformed {len(transformed_records)} records for domain '{domain}' and saved to {s3_output_path}"
         }
     except Exception as e:
         return {
