@@ -362,7 +362,7 @@ class InfrastructureProvisioner:
                 Name=self.workgroup_name,
                 Description='Workgroup for E-stat Feasibility Study',
                 Configuration={
-                    'ResultConfigurationUpdates': {
+                    'ResultConfiguration': {
                         'OutputLocation': result_location
                     },
                     'EnforceWorkGroupConfiguration': True,
