@@ -151,7 +151,7 @@ class FeasibilityBatchIngestion:
             return []
     
     def ingest_dataset(self, dataset: Dict) -> bool:
-        """データセットを取得してS3に保存（簡易版）"""
+        """データセットを取得してS3に保存（動的スキーマ版）"""
         dataset_id = dataset['id']
         dataset_name = dataset['title']
         
@@ -162,14 +162,8 @@ class FeasibilityBatchIngestion:
             return True
         
         try:
-            # ステップ1: ドメインを推定
-            logger.info(f"  [1/4] Extracting domain...")
-            # キーワード抽出をスキップして、データセット名から直接ドメインを決定
-            domain = self._determine_domain([], dataset_name)
-            logger.info(f"  Domain: {domain}")
-            
-            # ステップ2: E-stat APIからデータを取得
-            logger.info(f"  [2/4] Fetching dataset from E-stat API...")
+            # ステップ1: E-stat APIからデータを取得
+            logger.info(f"  [1/3] Fetching dataset from E-stat API...")
             data = self._fetch_from_estat_api(dataset_id)
             
             if not data:
@@ -178,9 +172,10 @@ class FeasibilityBatchIngestion:
             
             logger.info(f"  Fetched {len(data.get('VALUE', []))} records")
             
-            # ステップ3: S3に保存（JSON形式）
-            logger.info(f"  [3/4] Saving to S3...")
-            s3_key = f"raw/{domain}/{dataset_id}/data.json"
+            # ステップ2: S3に保存（データセット単位のディレクトリ構造）
+            logger.info(f"  [2/3] Saving to S3...")
+            # データセット単位のディレクトリ: dataset_{dataset_id}/
+            s3_key = f"datasets/dataset_{dataset_id}/data.json"
             
             self.s3_client.put_object(
                 Bucket=self.bucket_name,
@@ -192,21 +187,22 @@ class FeasibilityBatchIngestion:
             s3_path = f"s3://{self.bucket_name}/{s3_key}"
             logger.info(f"  Saved to: {s3_path}")
             
-            # ステップ4: メタデータを保存
-            logger.info(f"  [4/4] Saving metadata...")
-            metadata_key = f"metadata/{domain}/{dataset_id}/metadata.json"
+            # ステップ3: メタデータを保存（データセットカタログ用）
+            logger.info(f"  [3/3] Saving metadata to catalog...")
+            metadata_key = f"catalog/dataset_{dataset_id}.json"
             
             metadata = {
                 'dataset_id': dataset_id,
                 'dataset_name': dataset_name,
-                'domain': domain,
-                'keywords': [],  # キーワード抽出をスキップ
-                's3_raw_path': s3_path,
+                'table_name': f"dataset_{dataset_id}",  # Icebergテーブル名
+                's3_data_path': s3_path,
                 'record_count': len(data.get('VALUE', [])),
                 'ingestion_date': datetime.now().isoformat(),
                 'gov_org': dataset.get('gov_org', ''),
                 'statistics_name': dataset.get('statistics_name', ''),
-                'updated_date': dataset.get('updated_date', '')
+                'updated_date': dataset.get('updated_date', ''),
+                'schema_inferred': False,  # スキーマ推論は後で実行
+                'iceberg_table_created': False  # Icebergテーブル作成は後で実行
             }
             
             self.s3_client.put_object(
@@ -251,30 +247,6 @@ class FeasibilityBatchIngestion:
             logger.error(f"Error fetching data from E-stat API: {e}")
             return None
     
-    def _determine_domain(self, keywords: List[str], dataset_name: str) -> str:
-        """キーワードとデータセット名からドメインを決定"""
-        # ドメインキーワードマッピング
-        domain_keywords = {
-            'population': ['人口', '国勢調査', '世帯'],
-            'labor': ['労働', '雇用', '賃金', '就業'],
-            'economy': ['経済', 'GDP', '景気', '物価', '消費'],
-            'education': ['教育', '学校', '学生', '生徒'],
-            'health': ['医療', '健康', '病院', '診療'],
-            'agriculture': ['農業', '林業', '水産', '農林'],
-            'construction': ['建設', '建築', '住宅', '着工'],
-            'transport': ['運輸', '交通', '輸送', '鉄道', '自動車'],
-            'trade': ['商業', '小売', '卸売', '貿易'],
-            'social_welfare': ['福祉', '介護', '年金', '社会保障'],
-        }
-        
-        # キーワードマッチング
-        for domain, domain_kws in domain_keywords.items():
-            for kw in domain_kws:
-                if kw in dataset_name or any(kw in k for k in keywords):
-                    return domain
-        
-        # デフォルトはgeneric
-        return 'generic'
     
     def run(self) -> bool:
         """バッチインジェストを実行"""
