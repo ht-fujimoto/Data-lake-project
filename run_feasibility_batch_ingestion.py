@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 import requests
 import os
+import boto3
 
 # プロジェクトルートをパスに追加
 project_root = Path(__file__).parent
@@ -70,34 +71,18 @@ class FeasibilityBatchIngestion:
         self.dry_run = dry_run
         
         # E-stat API設定
-        self.estat_api_key = os.getenv('ESTAT_API_KEY')
+        self.estat_api_key = os.getenv('ESTAT_APP_ID') or os.getenv('ESTAT_API_KEY')
         if not self.estat_api_key:
-            raise ValueError("ESTAT_API_KEY environment variable is required")
+            raise ValueError("ESTAT_APP_ID or ESTAT_API_KEY environment variable is required")
         
         self.estat_base_url = "https://api.e-stat.go.jp/rest/3.0/app"
         
-        # コンポーネント初期化
-        self.fetcher = DatasetFetcher(
-            bucket_name=bucket_name,
-            region=region
-        )
+        # AWS設定
+        import boto3
+        self.s3_client = boto3.client('s3', region_name=region)
+        self.glue_client = boto3.client('glue', region_name=region)
         
-        self.transformer = DataTransformer(
-            bucket_name=bucket_name,
-            region=region
-        )
-        
-        self.iceberg_loader = IcebergLoader(
-            database_name=database_name,
-            bucket_name=bucket_name,
-            region=region
-        )
-        
-        self.metadata_catalog = EnhancedMetadataCatalog(
-            bucket_name=bucket_name,
-            region=region
-        )
-        
+        # キーワード抽出器のみ初期化（他のコンポーネントはMCP依存のため使用しない）
         self.keyword_extractor = EstatKeywordExtractor()
         
         # 結果を保存
@@ -115,12 +100,10 @@ class FeasibilityBatchIngestion:
         
         try:
             # E-stat API: getStatsList
-            url = f"{self.estat_base_url}/getStatsList"
+            url = f"{self.estat_base_url}/json/getStatsList"
             params = {
                 'appId': self.estat_api_key,
                 'limit': max_results,
-                'updatedDate': '2020-01-01',  # 2020年以降のデータ
-                'statsField': '00',  # すべての分野
             }
             
             response = requests.get(url, params=params, timeout=30)
@@ -140,10 +123,19 @@ class FeasibilityBatchIngestion:
                     
                     datasets = []
                     for table in table_inf:
+                        # TITLEが辞書の場合と文字列の場合を処理
+                        title = table.get('TITLE', '')
+                        if isinstance(title, dict):
+                            title = title.get('$', '')
+                        
+                        gov_org = table.get('GOV_ORG', '')
+                        if isinstance(gov_org, dict):
+                            gov_org = gov_org.get('$', '')
+                        
                         datasets.append({
                             'id': table.get('@id', ''),
-                            'title': table.get('TITLE', {}).get('$', ''),
-                            'gov_org': table.get('GOV_ORG', {}).get('$', ''),
+                            'title': title,
+                            'gov_org': gov_org,
                             'statistics_name': table.get('STATISTICS_NAME', ''),
                             'updated_date': table.get('UPDATED_DATE', ''),
                         })
@@ -159,7 +151,7 @@ class FeasibilityBatchIngestion:
             return []
     
     def ingest_dataset(self, dataset: Dict) -> bool:
-        """データセットを取得してIcebergテーブルに投入"""
+        """データセットを取得してS3に保存（簡易版）"""
         dataset_id = dataset['id']
         dataset_name = dataset['title']
         
@@ -170,60 +162,58 @@ class FeasibilityBatchIngestion:
             return True
         
         try:
-            # ステップ1: データセットを取得
-            logger.info(f"  [1/5] Fetching dataset from E-stat API...")
-            s3_path = self.fetcher.fetch_dataset(
-                dataset_id=dataset_id,
-                save_to_s3=True
-            )
-            
-            if not s3_path:
-                logger.error(f"  Failed to fetch dataset")
-                return False
-            
-            logger.info(f"  Saved to: {s3_path}")
-            
-            # ステップ2: ドメインを推定
-            logger.info(f"  [2/5] Extracting domain...")
-            keywords = self.keyword_extractor.extract_keywords(dataset_name)
-            domain = self._determine_domain(keywords, dataset_name)
+            # ステップ1: ドメインを推定
+            logger.info(f"  [1/4] Extracting domain...")
+            # キーワード抽出をスキップして、データセット名から直接ドメインを決定
+            domain = self._determine_domain([], dataset_name)
             logger.info(f"  Domain: {domain}")
             
-            # ステップ3: Parquet形式に変換
-            logger.info(f"  [3/5] Transforming to Parquet...")
-            parquet_path = self.transformer.transform_to_parquet(
-                s3_input_path=s3_path,
-                domain=domain,
-                dataset_id=dataset_id
-            )
+            # ステップ2: E-stat APIからデータを取得
+            logger.info(f"  [2/4] Fetching dataset from E-stat API...")
+            data = self._fetch_from_estat_api(dataset_id)
             
-            if not parquet_path:
-                logger.error(f"  Failed to transform to Parquet")
+            if not data:
+                logger.error(f"  Failed to fetch dataset from E-stat API")
                 return False
             
-            logger.info(f"  Parquet saved to: {parquet_path}")
+            logger.info(f"  Fetched {len(data.get('VALUE', []))} records")
             
-            # ステップ4: Icebergテーブルに投入
-            logger.info(f"  [4/5] Loading to Iceberg table...")
-            success = self.iceberg_loader.load_to_iceberg(
-                domain=domain,
-                s3_parquet_path=parquet_path,
-                create_if_not_exists=True
+            # ステップ3: S3に保存（JSON形式）
+            logger.info(f"  [3/4] Saving to S3...")
+            s3_key = f"raw/{domain}/{dataset_id}/data.json"
+            
+            self.s3_client.put_object(
+                Bucket=self.bucket_name,
+                Key=s3_key,
+                Body=json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8'),
+                ContentType='application/json'
             )
             
-            if not success:
-                logger.error(f"  Failed to load to Iceberg")
-                return False
+            s3_path = f"s3://{self.bucket_name}/{s3_key}"
+            logger.info(f"  Saved to: {s3_path}")
             
-            # ステップ5: メタデータを保存
-            logger.info(f"  [5/5] Saving metadata...")
-            self.metadata_catalog.save_metadata(
-                dataset_id=dataset_id,
-                dataset_name=dataset_name,
-                domain=domain,
-                s3_raw_path=s3_path,
-                s3_parquet_path=parquet_path,
-                keywords=keywords
+            # ステップ4: メタデータを保存
+            logger.info(f"  [4/4] Saving metadata...")
+            metadata_key = f"metadata/{domain}/{dataset_id}/metadata.json"
+            
+            metadata = {
+                'dataset_id': dataset_id,
+                'dataset_name': dataset_name,
+                'domain': domain,
+                'keywords': [],  # キーワード抽出をスキップ
+                's3_raw_path': s3_path,
+                'record_count': len(data.get('VALUE', [])),
+                'ingestion_date': datetime.now().isoformat(),
+                'gov_org': dataset.get('gov_org', ''),
+                'statistics_name': dataset.get('statistics_name', ''),
+                'updated_date': dataset.get('updated_date', '')
+            }
+            
+            self.s3_client.put_object(
+                Bucket=self.bucket_name,
+                Key=metadata_key,
+                Body=json.dumps(metadata, ensure_ascii=False, indent=2).encode('utf-8'),
+                ContentType='application/json'
             )
             
             logger.info(f"  ✅ Successfully ingested: {dataset_name}")
@@ -232,6 +222,34 @@ class FeasibilityBatchIngestion:
         except Exception as e:
             logger.error(f"  ❌ Error ingesting dataset: {e}", exc_info=True)
             return False
+    
+    def _fetch_from_estat_api(self, dataset_id: str) -> Optional[Dict]:
+        """E-stat APIから直接データを取得"""
+        try:
+            # E-stat API: getStatsData
+            url = f"{self.estat_base_url}/json/getStatsData"
+            params = {
+                'appId': self.estat_api_key,
+                'statsDataId': dataset_id,
+                'limit': 10000,  # 最大10,000レコード
+                'metaGetFlg': 'Y',  # メタデータも取得
+            }
+            
+            response = requests.get(url, params=params, timeout=60)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # データが正常に取得できたか確認
+            if 'GET_STATS_DATA' in data and 'STATISTICAL_DATA' in data['GET_STATS_DATA']:
+                return data['GET_STATS_DATA']['STATISTICAL_DATA']
+            
+            logger.warning(f"No data found for dataset {dataset_id}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error fetching data from E-stat API: {e}")
+            return None
     
     def _determine_domain(self, keywords: List[str], dataset_name: str) -> str:
         """キーワードとデータセット名からドメインを決定"""
