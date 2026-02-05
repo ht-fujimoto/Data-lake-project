@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 
 from datalake.dynamic_schema_manager import DynamicSchemaManager, DatasetSchema
+from datalake.metadata_based_schema_manager import MetadataBasedSchemaManager
 from datalake.metadata_catalog import MetadataCatalog, DatasetCatalogEntry
 
 logger = logging.getLogger(__name__)
@@ -56,22 +57,27 @@ class DynamicIngestionOrchestrator:
         self.s3_bucket = s3_bucket
         self.glue_database = glue_database
         
-        self.schema_manager = DynamicSchemaManager(s3_bucket)
+        # メタデータベースのスキーマ管理を使用（高速・正確）
+        self.metadata_schema_manager = MetadataBasedSchemaManager()
+        # サンプルベースのスキーマ管理（フォールバック用）
+        self.sample_schema_manager = DynamicSchemaManager(s3_bucket)
         self.metadata_catalog = MetadataCatalog(s3_bucket=s3_bucket)
     
     def ingest_dataset(
         self,
         dataset_id: str,
         metadata: Dict[str, Any],
-        domain: str
+        domain: str,
+        use_metadata_schema: bool = True
     ) -> IngestionResult:
         """
         データセットを動的スキーマでインジェスト
         
         Args:
             dataset_id: データセットID
-            metadata: E-statメタデータ
+            metadata: E-statメタデータ（getMetaInfo APIのレスポンス）
             domain: ドメイン（検索用タグ）
+            use_metadata_schema: メタデータベースのスキーマ推論を使用（デフォルト: True）
             
         Returns:
             IngestionResult
@@ -81,31 +87,56 @@ class DynamicIngestionOrchestrator:
         logger.info(f"Starting dynamic ingestion for dataset {dataset_id}")
         
         try:
-            # Step 1: データ取得（サンプル + 全データ）
-            logger.info(f"Step 1: Fetching data for {dataset_id}")
-            fetch_result = self.mcp_fetch(
-                dataset_id=dataset_id,
-                save_to_s3=True
-            )
-            
-            raw_s3_path = fetch_result.get("s3_path")
-            sample_records = fetch_result.get("sample_records", [])[:1000]
-            
-            if not sample_records:
-                raise ValueError("No sample records available for schema inference")
-            
-            # Step 2: スキーマ推論
-            logger.info(f"Step 2: Inferring schema from {len(sample_records)} samples")
-            schema = self.schema_manager.infer_schema_from_data(
-                dataset_id=dataset_id,
-                sample_records=sample_records,
-                metadata=metadata,
-                domain=domain
-            )
+            # Step 1: スキーマ推論（メタデータベース or サンプルベース）
+            if use_metadata_schema:
+                logger.info(f"Step 1: Inferring schema from metadata for {dataset_id}")
+                schema = self.metadata_schema_manager.infer_schema_from_metadata(
+                    dataset_id=dataset_id,
+                    metadata=metadata,
+                    domain=domain
+                )
+                logger.info(f"✓ Metadata-based schema inference: {len(schema.columns)} columns")
+            else:
+                # フォールバック: サンプルデータから推論
+                logger.info(f"Step 1: Fetching sample data for {dataset_id}")
+                fetch_result = self.mcp_fetch(
+                    dataset_id=dataset_id,
+                    save_to_s3=False
+                )
+                sample_records = fetch_result.get("sample_records", [])[:1000]
+                
+                if not sample_records:
+                    raise ValueError("No sample records available for schema inference")
+                
+                logger.info(f"Step 1b: Inferring schema from {len(sample_records)} samples")
+                schema = self.sample_schema_manager.infer_schema_from_data(
+                    dataset_id=dataset_id,
+                    sample_records=sample_records,
+                    metadata=metadata,
+                    domain=domain
+                )
+                logger.info(f"✓ Sample-based schema inference: {len(schema.columns)} columns")
             
             # スキーマを保存
             schema_path = f"schemas/{dataset_id}_schema.json"
-            self.schema_manager.save_schema(schema, schema_path)
+            self.metadata_schema_manager.save_schema(schema, schema_path) if use_metadata_schema else self.sample_schema_manager.save_schema(schema, schema_path)
+            
+            # Step 2: データ取得（メタデータベースの場合はここで取得）
+            if use_metadata_schema:
+                logger.info(f"Step 2: Fetching full data for {dataset_id}")
+                fetch_result = self.mcp_fetch(
+                    dataset_id=dataset_id,
+                    save_to_s3=True
+                )
+                raw_s3_path = fetch_result.get("s3_path")
+            else:
+                # サンプルベースの場合は既に取得済み
+                logger.info(f"Step 2: Fetching full data for {dataset_id}")
+                fetch_result = self.mcp_fetch(
+                    dataset_id=dataset_id,
+                    save_to_s3=True
+                )
+                raw_s3_path = fetch_result.get("s3_path")
             
             # Step 3: Icebergテーブル作成
             logger.info(f"Step 3: Creating Iceberg table {schema.table_name}")
@@ -133,8 +164,9 @@ class DynamicIngestionOrchestrator:
             
             total_time = time.time() - start_time
             
+            schema_method = "metadata-based" if use_metadata_schema else "sample-based"
             logger.info(
-                f"Successfully ingested dataset {dataset_id}: "
+                f"Successfully ingested dataset {dataset_id} ({schema_method}): "
                 f"{record_count} records, {len(schema.columns)} columns, "
                 f"{total_time:.2f}s"
             )
