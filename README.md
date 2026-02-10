@@ -295,11 +295,37 @@ ORDER BY year, total_population DESC;
 
 ## ドキュメント
 
+### 基本ガイド
 - [クイックスタート](GETTING_STARTED.md)
-- [MCPサーバーセットアップ](mcp_server/SETUP_GUIDE.md)
+- [システム概要](docs/SYSTEM_OVERVIEW.md)
 - [アーキテクチャ](docs/ARCHITECTURE.md)
 - [ツールガイド](docs/TOOLS_GUIDE.md)
 - [API リファレンス](docs/API_REFERENCE.md)
+- [トラブルシューティング](docs/TROUBLESHOOTING.md)
+
+### 実装ガイド
+- [バッチ取り込みガイド](docs/guides/BATCH_INGESTION_GUIDE.md)
+- [MCPバッチ処理ガイド](docs/guides/MCP_BATCH_PROCESSING_GUIDE.md)
+- [MCPサーバー再起動ガイド](docs/guides/MCP_SERVER_RESTART_GUIDE.md)
+- [メタデータカタログ統合ガイド](docs/guides/METADATA_CATALOG_INTEGRATION_GUIDE.md)
+- [クイックスタート統合](docs/guides/QUICK_START_INTEGRATION.md)
+- [フィージビリティスタディ](docs/guides/README_FEASIBILITY.md)
+
+### 設計ドキュメント
+- [E-statデータレイク提案](docs/design/E-STAT_DATALAKE_PROPOSAL.md)
+- [完全カタログ戦略](docs/design/ESTAT_COMPLETE_CATALOG_STRATEGY.md)
+- [全データ取り込み計画](docs/design/ESTAT_FULL_INGESTION_PLAN.md)
+- [コスト分析](docs/design/FULL_INGESTION_COST_ANALYSIS.md)
+- [Icebergコスト詳細分析](docs/design/ICEBERG_COST_DETAILED_ANALYSIS.md)
+- [優先データセット選定戦略](docs/design/PRIORITY_DATASETS_SELECTION_STRATEGY.md)
+
+### 完了レポート
+- [最終完了レポート](docs/reports/FINAL_COMPLETION_REPORT.md)
+- [フィージビリティスタディ完了](docs/reports/FEASIBILITY_STUDY_COMPLETION_REPORT.md)
+- [100データセットバッチ完了](docs/reports/FEASIBILITY_100_BATCH_COMPLETION_REPORT.md)
+- [優先データレイク完了](docs/reports/PRIORITY_DATALAKE_COMPLETION_REPORT.md)
+- [パーティション実装完了](docs/reports/PARTITION_IMPLEMENTATION_REPORT.md)
+- [メタデータカタログ完了](docs/reports/METADATA_CATALOG_COMPLETION_REPORT.md)
 
 ## 更新履歴
 

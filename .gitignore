@@ -46,8 +46,9 @@ htmlcov/
 logs/
 *.log
 
-# Reports
-reports/
+# Reports (実行結果のみ除外、ドキュメントは含める)
+/reports/*.json
+/reports/*.log
 
 # OS
 .DS_Store
